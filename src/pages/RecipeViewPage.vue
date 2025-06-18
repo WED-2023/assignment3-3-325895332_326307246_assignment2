@@ -10,33 +10,37 @@
             <div class="wrapped">
               <div class="mb-3">
                 <div>Ready in {{ recipe.readyInMinutes }} minutes</div>
-                <div>Likes: {{ recipe.aggregateLikes }} likes</div>
+                <div>Servings: {{ recipe.servings }}</div>
+                <div v-if="recipe.isFavorite !== undefined">
+                  Favorite: {{ recipe.isFavorite ? 'Yes' : 'No' }}
+                  <button v-if="!recipe.isFavorite && this.$root.store.username" @click="markAsFavorite" class="btn btn-sm btn-outline-danger ms-2">
+                    Add to Favorites
+                  </button>
+                </div>
+                <div v-if="recipe.isWatched !== undefined">
+                  Watched: {{ recipe.isWatched ? 'Yes' : 'No' }}
+                </div>
               </div>
               Ingredients:
               <ul>
                 <li
-                  v-for="(r, index) in recipe.extendedIngredients"
-                  :key="index + '_' + r.id"
+                  v-for="(ing, index) in recipe.ingredients"
+                  :key="index"
                 >
-                  {{ r.original }}
+                  {{ ing }}
                 </li>
               </ul>
             </div>
             <div class="wrapped">
               Instructions:
               <ol>
-                <li v-for="s in recipe._instructions" :key="s.number">
-                  {{ s.step }}
+                <li v-for="(step, index) in recipe.instructions" :key="index">
+                  {{ step }}
                 </li>
               </ol>
             </div>
           </div>
         </div>
-        <!-- <pre>
-        {{ $route.params }}
-        {{ recipe }}
-      </pre
-        > -->
       </div>
     </div>
   </template>
@@ -48,59 +52,45 @@
         recipe: null
       };
     },
+    methods: {
+      async markAsFavorite() {
+        try {
+          await this.axios.post(`${this.$root.store.server_domain}/users/favorites`, {
+            recipeId: this.recipe.id,
+            isSpoonacular: this.recipe.source === 'spoon'
+          });
+          this.recipe.isFavorite = true;
+          this.$root.toast("Success", "Recipe added to favorites.", "success");
+        } catch (error) {
+          console.error("Failed to add to favorites", error);
+          this.$root.toast("Error", "Could not add to favorites.", "danger");
+        }
+      }
+    },
     async created() {
       try {
-        let response;
-        // response = this.$route.params.response;
+        const { recipeId } = this.$route.params;
+        const { source } = this.$route.query;
+
+        if (!recipeId || !source) {
+          this.$router.replace("/NotFound");
+          return;
+        }
+
+        const response = await this.axios.get(
+          `${this.$root.store.server_domain}/recipes/${recipeId}`,
+          { params: { source } }
+        );
   
-        try {
-          response = await this.axios.get(
-            // "https://test-for-3-2.herokuapp.com/recipes/info",
-            this.$root.store.server_domain + "/recipes/info",
-            {
-              params: { id: this.$route.params.recipeId }
-            }
-          );
-  
-          // console.log("response.status", response.status);
-          if (response.status !== 200) this.$router.replace("/NotFound");
-        } catch (error) {
-          console.log("error.response.status", error.response.status);
+        if (response.status !== 200) {
           this.$router.replace("/NotFound");
           return;
         }
   
-        let {
-          analyzedInstructions,
-          instructions,
-          extendedIngredients,
-          aggregateLikes,
-          readyInMinutes,
-          image,
-          title
-        } = response.data.recipe;
-  
-        let _instructions = analyzedInstructions
-          .map((fstep) => {
-            fstep.steps[0].step = fstep.name + fstep.steps[0].step;
-            return fstep.steps;
-          })
-          .reduce((a, b) => [...a, ...b], []);
-  
-        let _recipe = {
-          instructions,
-          _instructions,
-          analyzedInstructions,
-          extendedIngredients,
-          aggregateLikes,
-          readyInMinutes,
-          image,
-          title
-        };
-  
-        this.recipe = _recipe;
+        this.recipe = response.data;
       } catch (error) {
         console.log(error);
+        this.$router.replace("/NotFound");
       }
     }
   };
@@ -123,4 +113,3 @@
   
   } */
   </style>
-  

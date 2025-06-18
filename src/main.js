@@ -10,6 +10,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.js';
 
 import store from './store';
 
+axios.defaults.withCredentials = true;
+
 const router = createRouter({
   history: createWebHistory(),
   routes

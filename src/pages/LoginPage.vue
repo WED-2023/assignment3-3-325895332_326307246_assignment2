@@ -13,7 +13,7 @@
         <label>Password:</label>
         <input v-model="state.password" type="password" class="form-control" />
         <div v-if="v$.password.$error" class="text-danger">
-          Password is required (at least 6 characters).
+          Password is required (5-10 characters, must include a digit and a special character).
         </div>
       </div>
       <button type="submit" class="btn btn-primary mt-3">Login</button>
@@ -24,11 +24,18 @@
 <script>
 import { reactive } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
-import { required, minLength } from '@vuelidate/validators';
+import { required, minLength, maxLength } from '@vuelidate/validators';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
+import store from '../store';
+
+const passwordValidator = (value) =>
+  /[!@#$%^&*(),.?":{}|<>]/.test(value) && /\d/.test(value);
 
 export default {
   name: "LoginPage",
   setup(_, { expose }) {
+    const router = useRouter();
     const state = reactive({
       username: '',
       password: '',
@@ -36,21 +43,21 @@ export default {
 
     const rules = {
       username: { required },
-      password: { required, minLength: minLength(6) },
+      password: { required, minLength: minLength(5), maxLength: maxLength(10), passwordValidator },
     };
 
     const v$ = useVuelidate(rules, state);
 
     const login = async () => {
-      if (await v$.value.$validate()) {
-        // קריאה לשרת
+      const isFormCorrect = await v$.value.$validate();
+      if (isFormCorrect) {
         try {
-          await window.axios.post('/login', {
+          await axios.post(`${store.server_domain}/login`, {
             username: state.username,
             password: state.password
           });
-          window.store.login(state.username);
-          window.router.push('/main');
+          store.login(state.username);
+          router.push('/');
         } catch (err) {
           window.toast("Login failed", err.response.data.message, "danger");
         }

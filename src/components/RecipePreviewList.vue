@@ -1,15 +1,15 @@
 <template>
-  <b-container>
+  <div class="container">
     <h3>
       {{ title }}:
       <slot></slot>
     </h3>
-    <b-row>
-      <b-col v-for="r in recipes" :key="r.id">
+    <div class="row">
+      <div class="col" v-for="r in recipes" :key="r.id">
         <RecipePreview class="recipePreview" :recipe="r" />
-      </b-col>
-    </b-row>
-  </b-container>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -23,46 +23,10 @@ export default {
     title: {
       type: String,
       required: true
-    }
-  },
-  data() {
-    return {
-      recipes: []
-    };
-  },
-  mounted() {
-    this.updateRecipes();
-  },
-  methods: {
-    async updateRecipes() {
-      try {
-        const response = await this.axios.get(
-          "https://api.spoonacular.com/recipes/random",
-          {
-            params: {
-              limitLicense: true,
-              number: 3,
-              apiKey: 'b7b147413c244375812ccb826d79cdcc'
-            }
-          }
-        );
-
-        console.log("response: ", response);
-        const recipes = response.data.recipes.map((r) => {
-          return {
-            id: r.id,
-            title: r.title,
-            readyInMinutes: r.readyInMinutes,
-            image: r.image,
-            aggregateLikes: r.aggregateLikes
-          };
-        });
-        this.recipes = [];
-        this.recipes.push(...recipes);
-        console.log("recipes:  " , this.recipes);
-      } catch (error) {
-        console.log(error);
-      }
+    },
+    recipes: {
+      type: Array,
+      required: true
     }
   }
 };

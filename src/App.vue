@@ -28,8 +28,8 @@ export default {
     const toast = internalInstance.appContext.config.globalProperties.toast;
     const router = internalInstance.appContext.config.globalProperties.$router;
 
-    const logout = () => {
-      store.logout();
+    const logout = async () => {
+      await store.logout();
       toast("Logout", "User logged out successfully", "success");
       router.push("/").catch(() => {});
     };
