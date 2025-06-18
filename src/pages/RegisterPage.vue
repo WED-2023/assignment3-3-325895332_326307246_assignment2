@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import { reactive, onMounted, ref } from 'vue';
+import { reactive, onMounted, ref, toRef } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required, minLength, maxLength, sameAs, email, helpers } from '@vuelidate/validators';
 import { useRouter } from 'vue-router';
@@ -103,6 +103,9 @@ export default {
       profilePic: ''
     });
 
+    // Create a reactive ref for state.password
+    const passwordRef = toRef(state, 'password');
+
     const rules = {
       username: { required, minLength: minLength(3), maxLength: maxLength(8), alpha },
       firstname: { required },
@@ -110,7 +113,13 @@ export default {
       country: { required },
       email: { required, email },
       password: { required, minLength: minLength(5), maxLength: maxLength(10), passwordValidator },
-      confirmPassword: { required, sameAsPassword: sameAs(() => state.password) }
+      confirmPassword: { 
+        required, 
+        sameAsPassword: helpers.withMessage(
+          "Passwords must match.",
+          sameAs(passwordRef)
+        )
+      }
     };
 
     const v$ = useVuelidate(rules, state);

@@ -62,4 +62,6 @@ app.config.globalProperties.toast = function (title, content, variant = null, ap
   }, 3000);
 };
 
+window.toast = (...args) => app.config.globalProperties.toast(...args);
+
 app.mount('#app');
