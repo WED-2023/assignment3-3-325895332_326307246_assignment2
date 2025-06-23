@@ -1,115 +1,166 @@
 <template>
-    <div class="container">
-      <div v-if="recipe">
-        <div class="recipe-header mt-3 mb-4">
-          <h1>{{ recipe.title }}</h1>
-          <img :src="recipe.image" class="center" />
-        </div>
-        <div class="recipe-body">
-          <div class="wrapper">
-            <div class="wrapped">
-              <div class="mb-3">
-                <div>Ready in {{ recipe.readyInMinutes }} minutes</div>
-                <div>Servings: {{ recipe.servings }}</div>
-                <div v-if="recipe.isFavorite !== undefined">
-                  Favorite: {{ recipe.isFavorite ? 'Yes' : 'No' }}
-                  <button v-if="!recipe.isFavorite && this.$root.store.username" @click="markAsFavorite" class="btn btn-sm btn-outline-danger ms-2">
-                    Add to Favorites
-                  </button>
-                </div>
-                <div v-if="recipe.isWatched !== undefined">
-                  Watched: {{ recipe.isWatched ? 'Yes' : 'No' }}
-                </div>
-              </div>
-              Ingredients:
-              <ul>
-                <li
-                  v-for="(ing, index) in recipe.ingredients"
-                  :key="index"
-                >
-                  {{ ing }}
-                </li>
-              </ul>
+  <div class="container">
+    <div v-if="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    
+    <div v-else-if="recipe" class="row">
+      <div class="col-lg-8">
+        <div class="card mb-4">
+          <img v-if="recipe.image" :src="recipe.image" class="card-img-top recipe-hero-image" :alt="recipe.title">
+          <div class="card-body">
+            <h1 class="card-title">{{ recipe.title }}</h1>
+            <div class="recipe-meta d-flex flex-wrap gap-3 mb-3">
+              <span class="badge bg-primary">
+                <i class="fas fa-clock me-1"></i>{{ recipe.readyInMinutes }} min
+              </span>
+              <span class="badge bg-info">
+                <i class="fas fa-users me-1"></i>{{ recipe.servings }} servings
+              </span>
+              <span v-if="recipe.vegan" class="badge bg-success">
+                <i class="fas fa-leaf me-1"></i>Vegan
+              </span>
+              <span v-if="recipe.vegetarian" class="badge bg-success">
+                <i class="fas fa-carrot me-1"></i>Vegetarian
+              </span>
+              <span v-if="recipe.glutenFree" class="badge bg-warning">
+                <i class="fas fa-wheat me-1"></i>Gluten Free
+              </span>
             </div>
-            <div class="wrapped">
-              Instructions:
-              <ol>
-                <li v-for="(step, index) in recipe.instructions" :key="index">
-                  {{ step }}
-                </li>
-              </ol>
+            
+            <div class="recipe-actions mb-4" v-if="store.username">
+              <button @click="toggleFavorite" class="btn me-2" :class="recipe.isFavorite ? 'btn-danger' : 'btn-outline-danger'">
+                <i class="fas fa-heart me-1"></i>
+                {{ recipe.isFavorite ? 'Remove from Favorites' : 'Add to Favorites' }}
+              </button>
             </div>
           </div>
         </div>
       </div>
+      
+      <div class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5><i class="fas fa-list me-2"></i>Ingredients</h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled">
+              <li v-for="(ingredient, index) in recipe.ingredients" :key="index" class="mb-2">
+                <i class="fas fa-check-circle text-success me-2"></i>{{ ingredient }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5><i class="fas fa-clipboard-list me-2"></i>Instructions</h5>
+          </div>
+          <div class="card-body">
+            <ol class="instructions-list">
+              <li v-for="(instruction, index) in recipe.instructions" :key="index" class="mb-3">
+                {{ instruction }}
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        recipe: null
-      };
-    },
-    methods: {
-      async markAsFavorite() {
-        try {
-          await this.axios.post(`${this.$root.store.server_domain}/users/favorites`, {
-            recipeId: this.recipe.id,
-            isSpoonacular: this.recipe.source === 'spoon'
-          });
-          this.recipe.isFavorite = true;
-          this.$root.toast("Success", "Recipe added to favorites.", "success");
-        } catch (error) {
-          console.error("Failed to add to favorites", error);
-          this.$root.toast("Error", "Could not add to favorites.", "danger");
-        }
-      }
-    },
-    async created() {
+    
+    <div v-else class="text-center py-5">
+      <h2>Recipe not found</h2>
+      <router-link to="/" class="btn btn-primary">Go Back Home</router-link>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref, onMounted, getCurrentInstance } from 'vue';
+import { useRoute } from 'vue-router';
+import axios from 'axios';
+
+export default {
+  name: "RecipeViewPage",
+  setup() {
+    const route = useRoute();
+    const internalInstance = getCurrentInstance();
+    const store = internalInstance.appContext.config.globalProperties.store;
+    
+    const recipe = ref(null);
+    const loading = ref(true);
+    
+    const fetchRecipe = async () => {
       try {
-        const { recipeId } = this.$route.params;
-        const { source } = this.$route.query;
-
-        if (!recipeId || !source) {
-          this.$router.replace("/NotFound");
-          return;
-        }
-
-        const response = await this.axios.get(
-          `${this.$root.store.server_domain}/recipes/${recipeId}`,
-          { params: { source } }
-        );
-  
-        if (response.status !== 200) {
-          this.$router.replace("/NotFound");
-          return;
-        }
-  
-        this.recipe = response.data;
+        const { recipeId } = route.params;
+        const source = route.query.source || 'spoon';
+        
+        const response = await axios.get(`${store.server_domain}/recipes/${recipeId}?source=${source}`);
+        recipe.value = response.data;
       } catch (error) {
-        console.log(error);
-        this.$router.replace("/NotFound");
+        console.error('Failed to fetch recipe:', error);
+        window.toast("Error", "Failed to load recipe", "danger");
+      } finally {
+        loading.value = false;
       }
-    }
-  };
-  </script>
-  
-  <style scoped>
-  .wrapper {
-    display: flex;
+    };
+    
+    const toggleFavorite = async () => {
+      if (!store.username) {
+        window.toast("Info", "Please login to add favorites", "info");
+        return;
+      }
+      
+      try {
+        const isSpoonacular = route.query.source === 'spoon';
+        await axios.post(`${store.server_domain}/users/favorites`, {
+          recipeId: recipe.value.id,
+          isSpoonacular
+        });
+        
+        recipe.value.isFavorite = !recipe.value.isFavorite;
+        const message = recipe.value.isFavorite ? 'Added to favorites' : 'Removed from favorites';
+        window.toast("Success", message, "success");
+      } catch (error) {
+        console.error('Failed to toggle favorite:', error);
+        window.toast("Error", "Failed to update favorites", "danger");
+      }
+    };
+    
+    onMounted(fetchRecipe);
+    
+    return {
+      recipe,
+      loading,
+      store,
+      toggleFavorite
+    };
   }
-  .wrapped {
-    width: 50%;
-  }
-  .center {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%;
-  }
-  /* .recipe-header{
-  
-  } */
-  </style>
+};
+</script>
+
+<style scoped>
+.recipe-hero-image {
+  height: 400px;
+  object-fit: cover;
+}
+
+.recipe-meta .badge {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.instructions-list li {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.recipe-actions .btn {
+  font-weight: 500;
+}
+</style>

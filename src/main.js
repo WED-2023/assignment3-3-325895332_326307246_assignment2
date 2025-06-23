@@ -17,6 +17,17 @@ const router = createRouter({
   routes
 });
 
+// Navigation guard for protected routes
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!store.username) {
+      next({ name: 'login', query: { redirect: to.fullPath } });
+      return;
+    }
+  }
+  next();
+});
+
 const app = createApp(App);
 
 app.use(router);
@@ -57,9 +68,17 @@ app.config.globalProperties.toast = function (title, content, variant = null, ap
   }
   toastContainer.appendChild(toast);
 
+  // Auto dismiss after 3 seconds
   setTimeout(() => {
-    toast.remove();
+    if (toast.parentNode) {
+      toast.remove();
+    }
   }, 3000);
+  
+  // Bootstrap toast functionality
+  // eslint-disable-next-line no-undef
+  const bsToast = new bootstrap.Toast(toast);
+  bsToast.show();
 };
 
 window.toast = (...args) => app.config.globalProperties.toast(...args);

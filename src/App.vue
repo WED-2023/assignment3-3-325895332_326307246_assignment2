@@ -1,19 +1,74 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link :to="{ name: 'main' }">Vue Recipes</router-link> |
-      <router-link :to="{ name: 'search' }">Search</router-link> |
-      <span v-if="!store.username">
-        Guest:
-        <router-link :to="{ name: 'register' }">Register</router-link> |
-        <router-link :to="{ name: 'login' }">Login</router-link> |
-      </span>
-      <span v-else>
-        {{ store.username }}:
-        <button @click="logout" class="btn btn-link p-0">Logout</button> |
-      </span>
-    </div>
-    <router-view />
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <router-link :to="{ name: 'main' }" class="navbar-brand">
+          <i class="fas fa-utensils me-2"></i>Vue Recipes
+        </router-link>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <router-link :to="{ name: 'search' }" class="nav-link">
+                <i class="fas fa-search me-1"></i>Search
+              </router-link>
+            </li>
+            <li class="nav-item" v-if="store.username">
+              <router-link :to="{ name: 'favorites' }" class="nav-link">
+                <i class="fas fa-heart me-1"></i>My Favorites
+              </router-link>
+            </li>
+            <li class="nav-item" v-if="store.username">
+              <router-link :to="{ name: 'myRecipes' }" class="nav-link">
+                <i class="fas fa-book me-1"></i>My Recipes
+              </router-link>
+            </li>
+            <li class="nav-item" v-if="store.username">
+              <router-link :to="{ name: 'familyRecipes' }" class="nav-link">
+                <i class="fas fa-home me-1"></i>Family Recipes
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link :to="{ name: 'about' }" class="nav-link">
+                <i class="fas fa-info-circle me-1"></i>About
+              </router-link>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item" v-if="!store.username">
+              <router-link :to="{ name: 'register' }" class="nav-link">
+                <i class="fas fa-user-plus me-1"></i>Register
+              </router-link>
+            </li>
+            <li class="nav-item" v-if="!store.username">
+              <router-link :to="{ name: 'login' }" class="nav-link">
+                <i class="fas fa-sign-in-alt me-1"></i>Login
+              </router-link>
+            </li>
+            <li class="nav-item dropdown" v-else>
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <i class="fas fa-user me-1"></i>{{ store.username }}
+              </a>
+              <ul class="dropdown-menu">
+                <li><button @click="logout" class="dropdown-item">
+                  <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </button></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <main class="container-fluid py-4">
+      <router-view />
+    </main>
+    <footer class="bg-dark text-light py-4 mt-5">
+      <div class="container text-center">
+        <p>&copy; 2024 Vue Recipes - Your Family Recipe Collection</p>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -41,25 +96,57 @@ export default {
 
 <style lang="scss">
 @import "@/scss/form-style.scss";
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-#nav {
-  padding: 30px;
+main {
+  flex: 1;
 }
 
-#nav a {
+.navbar-brand {
   font-weight: bold;
-  color: #2c3e50;
+  font-size: 1.5rem;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn {
+  border-radius: 25px;
+  padding: 0.5rem 1.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.recipe-preview-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style>
