@@ -6,7 +6,11 @@
     </h3>
     <div class="row">
       <div class="col" v-for="r in recipes" :key="r.id">
-        <RecipePreview class="recipePreview" :recipe="r" />
+        <RecipePreview 
+          class="recipePreview" 
+          :recipe="r" 
+          @favorite-changed="handleFavoriteChanged"
+        />
       </div>
     </div>
   </div>
@@ -27,6 +31,13 @@ export default {
     recipes: {
       type: Array,
       required: true
+    }
+  },
+  emits: ['favorite-changed'],
+  methods: {
+    handleFavoriteChanged(event) {
+      // Forward the event to parent component
+      this.$emit('favorite-changed', event);
     }
   }
 };

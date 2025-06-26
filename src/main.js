@@ -6,7 +6,8 @@ import VueAxios from 'vue-axios';
 import { createRouter, createWebHistory } from 'vue-router';
 
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/js/bootstrap.bundle.js';
+// Import Bootstrap JS properly
+import * as bootstrap from 'bootstrap';
 
 import store from './store';
 
@@ -75,8 +76,7 @@ app.config.globalProperties.toast = function (title, content, variant = null, ap
     }
   }, 3000);
   
-  // Bootstrap toast functionality
-  // eslint-disable-next-line no-undef
+  // Bootstrap toast functionality - now bootstrap is properly imported
   const bsToast = new bootstrap.Toast(toast);
   bsToast.show();
 };

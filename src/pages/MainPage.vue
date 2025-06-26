@@ -2,7 +2,12 @@
   <div class="container">
     <h1 class="title">Main Page</h1>
 
-    <RecipePreviewList title="Random Recipes" :recipes="randomRecipes" class="RandomRecipes center" />
+    <RecipePreviewList 
+      title="Random Recipes" 
+      :recipes="randomRecipes" 
+      class="RandomRecipes center" 
+      @favorite-changed="handleFavoriteChanged"
+    />
     <div class="text-center mb-4">
       <button @click="fetchRecipes" class="btn btn-secondary">New Random Recipes</button>
     </div>
@@ -21,6 +26,7 @@
         blur: !store.username,
         center: true
       }"
+      @favorite-changed="handleFavoriteChanged"
     />
   </div>
 </template>
@@ -60,13 +66,30 @@ export default {
       }
     };
 
+    const handleFavoriteChanged = (event) => {
+      const { recipeId, isFavorite } = event;
+      
+      // Update random recipes
+      const randomRecipe = state.randomRecipes.find(r => r.id === recipeId);
+      if (randomRecipe) {
+        randomRecipe.isFavorite = isFavorite;
+      }
+      
+      // Update last viewed recipes
+      const lastViewedRecipe = state.lastViewedRecipes.find(r => r.id === recipeId);
+      if (lastViewedRecipe) {
+        lastViewedRecipe.isFavorite = isFavorite;
+      }
+    };
+
     onMounted(fetchRecipes);
 
     return { 
       store, 
       randomRecipes: computed(() => state.randomRecipes),
       lastViewedRecipes: computed(() => state.lastViewedRecipes),
-      fetchRecipes
+      fetchRecipes,
+      handleFavoriteChanged
     };
   }
 };
@@ -80,7 +103,7 @@ export default {
   -webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
   filter: blur(2px);
 }
-::v-deep .blur .recipe-preview {
+:deep(.blur .recipe-preview) {
   pointer-events: none;
   cursor: default;
 }

@@ -21,7 +21,12 @@
       </router-link>
     </div>
     
-    <RecipePreviewList v-else title="Your Favorite Recipes" :recipes="favoriteRecipes" />
+    <RecipePreviewList 
+      v-else 
+      title="Your Favorite Recipes" 
+      :recipes="favoriteRecipes" 
+      @favorite-changed="handleFavoriteChanged"
+    />
   </div>
 </template>
 
@@ -51,13 +56,30 @@ export default {
       const response = await axios.get(`${store.server_domain}/users/favorites`);
       this.favoriteRecipes = response.data.map(r => ({
         ...r,
-        isSpoonacular: r.source !== 'db'
+        isSpoonacular: r.source !== 'db',
+        isFavorite: true // All recipes in favorites page are favorites
       }));
     } catch (error) {
       console.error("Failed to load favorite recipes:", error);
       window.toast("Error", "Failed to load your favorite recipes.", "danger");
     } finally {
       this.loading = false;
+    }
+  },
+  methods: {
+    handleFavoriteChanged(event) {
+      const { recipeId, isFavorite } = event;
+      
+      if (!isFavorite) {
+        // Recipe was removed from favorites, remove it from the list
+        this.favoriteRecipes = this.favoriteRecipes.filter(recipe => recipe.id !== recipeId);
+      } else {
+        // Recipe was added to favorites, update its status
+        const recipe = this.favoriteRecipes.find(r => r.id === recipeId);
+        if (recipe) {
+          recipe.isFavorite = true;
+        }
+      }
     }
   }
 };
