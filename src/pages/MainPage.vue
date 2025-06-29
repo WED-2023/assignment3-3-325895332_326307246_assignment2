@@ -189,9 +189,25 @@ export default {
 <style lang="scss" scoped>
 .title {
   color: #2c3e50;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    border-radius: 2px;
+  }
 }
 
 .RandomRecipes {
@@ -207,70 +223,145 @@ export default {
 }
 
 .login-form-container {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 2rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid rgba(0, 123, 255, 0.1);
+  border-radius: 16px;
+  padding: 2.5rem;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  max-width: 420px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .login-title {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   color: #2c3e50;
-  font-weight: 600;
-  font-size: 1.5rem;
+  font-weight: 700;
+  font-size: 1.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    border-radius: 1px;
+  }
 }
 
 .login-form {
   .form-label {
     font-weight: 600;
-    color: #495057;
-    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
   }
   
   .form-control {
-    border-radius: 6px;
-    border: 1px solid #ced4da;
-    padding: 0.75rem;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 1rem;
     font-size: 1rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
     
     &:focus {
       border-color: #007bff;
-      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+      background: white;
+      transform: translateY(-1px);
+    }
+
+    &::placeholder {
+      color: #adb5bd;
+      font-style: italic;
     }
   }
   
   .form-check {
+    margin: 1.5rem 0;
+    
     .form-check-input {
       margin-top: 0.3rem;
+      transform: scale(1.1);
+      
+      &:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+      }
     }
     
     .form-check-label {
       color: #495057;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-left: 0.5rem;
     }
   }
   
   .btn-primary {
-    background: #007bff;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     border: none;
-    border-radius: 6px;
-    padding: 0.75rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
     
     &:hover:not(:disabled) {
-      background: #0056b3;
-      transform: translateY(-1px);
+      background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
+      
+      &::before {
+        left: 100%;
+      }
     }
     
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
   }
   
@@ -278,15 +369,37 @@ export default {
     color: #007bff;
     text-decoration: none;
     font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
     
     &:hover {
       text-decoration: underline;
+      color: #0056b3;
+      transform: translateY(-1px);
     }
   }
 }
 
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  color: white;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  &:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #3d4142 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(108, 117, 125, 0.3);
+  }
+}
+
 .blur {
-  -webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
+  -webkit-filter: blur(5px);
   filter: blur(2px);
 }
 
@@ -295,15 +408,55 @@ export default {
   cursor: default;
 }
 
-// Responsive design
-@media (max-width: 576px) {
-  .login-form-container {
-    padding: 1.5rem;
-    margin: 0 1rem;
+// Enhanced responsive design
+@media (max-width: 991.98px) {
+  .col-lg-6 {
+    margin-bottom: 2rem;
   }
   
   .title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .login-form-container {
+    padding: 2rem;
+    margin: 0 1rem;
+    border-radius: 12px;
+  }
+  
+  .title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .login-title {
     font-size: 1.5rem;
   }
+}
+
+// Background enhancements
+.container-fluid {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+// Add subtle animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.row {
+  animation: fadeIn 0.8s ease;
 }
 </style>

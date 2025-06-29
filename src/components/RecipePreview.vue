@@ -4,76 +4,75 @@
       :to="{ name: 'recipe', params: { recipeId: recipe.id }, query: { source: recipe.isSpoonacular ? 'spoon' : 'db' } }"
       class="recipe-preview-link"
     >
-      <div class="card h-100 recipe-card-hover">
-        <div class="position-relative">
+      <div class="modern-recipe-card">
+        <!-- Image Section -->
+        <div class="recipe-image-container">
           <img
             v-if="recipe.image"
             :src="recipe.image"
-            class="card-img-top recipe-image"
+            class="recipe-image"
             alt="Recipe image"
           />
-          <div v-else class="recipe-image-placeholder d-flex align-items-center justify-content-center">
-            <i class="fas fa-utensils fa-3x text-muted"></i>
+          <div v-else class="recipe-image-placeholder">
+            <i class="fas fa-utensils"></i>
           </div>
           
-          <!-- Recipe badges -->
-          <div class="recipe-badges position-absolute top-0 end-0 m-2">
-            <span v-if="recipe.vegan" class="badge bg-success mb-1 d-block">
-              <i class="fas fa-leaf me-1"></i>Vegan
+          <!-- Badges Overlay -->
+          <div class="recipe-badges">
+            <span v-if="recipe.vegan" class="badge badge-vegan">
+              <i class="fas fa-leaf"></i>
             </span>
-            <span v-if="recipe.vegetarian && !recipe.vegan" class="badge bg-info mb-1 d-block">
-              <i class="fas fa-carrot me-1"></i>Vegetarian
+            <span v-if="recipe.vegetarian && !recipe.vegan" class="badge badge-vegetarian">
+              <i class="fas fa-carrot"></i>
             </span>
-            <span v-if="recipe.glutenFree" class="badge bg-warning mb-1 d-block">
-              <i class="fas fa-wheat me-1"></i>GF
+            <span v-if="recipe.glutenFree" class="badge badge-gluten-free">
+              <i class="fas fa-wheat"></i>
             </span>
+          </div>
+
+          <!-- Favorite Action -->
+          <div v-if="store?.username && showActions" class="favorite-action">
+            <button 
+              @click.prevent="toggleFavorite" 
+              class="favorite-btn"
+              :class="{ 'active': isFavorite }"
+            >
+              <i class="fas fa-heart"></i>
+            </button>
           </div>
         </div>
         
-        <div class="card-body d-flex flex-column">
-          <h5 class="card-title recipe-title">{{ recipe.title }}</h5>
+        <!-- Content Section -->
+        <div class="recipe-content">
+          <h6 class="recipe-title">{{ recipe.title }}</h6>
           
-          <div class="recipe-meta mt-auto">
-            <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
-              <span v-if="recipe.readyInMinutes">
-                <i class="fas fa-clock me-1"></i>{{ recipe.readyInMinutes }} min
-              </span>
-              <span v-if="recipe.aggregateLikes">
-                <i class="fas fa-thumbs-up me-1"></i>{{ recipe.aggregateLikes }}
-              </span>
-              <span v-if="recipe.servings">
-                <i class="fas fa-users me-1"></i>{{ recipe.servings }}
-              </span>
+          <!-- Recipe Stats -->
+          <div class="recipe-stats">
+            <div class="stat-item" v-if="recipe.readyInMinutes">
+              <i class="fas fa-clock"></i>
+              <span>{{ recipe.readyInMinutes }}m</span>
             </div>
-            
-            <!-- Source indicator -->
-            <div class="recipe-source d-flex justify-content-between align-items-center">
-              <small class="text-muted">
-                <i :class="recipe.isSpoonacular ? 'fas fa-globe' : 'fas fa-home'" class="me-1"></i>
-                {{ recipe.isSpoonacular ? 'Spoonacular' : 'My Recipe' }}
-              </small>
-              
-              <!-- Favorite indicator -->
-              <span v-if="isFavorite" class="text-danger">
-                <i class="fas fa-heart"></i>
-              </span>
+            <div class="stat-item" v-if="recipe.servings">
+              <i class="fas fa-users"></i>
+              <span>{{ recipe.servings }}</span>
             </div>
+            <div class="stat-item" v-if="recipe.aggregateLikes">
+              <i class="fas fa-thumbs-up"></i>
+              <span>{{ recipe.aggregateLikes }}</span>
+            </div>
+          </div>
+          
+          <!-- Source -->
+          <div class="recipe-source">
+            <i :class="recipe.isSpoonacular ? 'fas fa-globe' : 'fas fa-home'"></i>
+            <span>{{ recipe.isSpoonacular ? 'Spoonacular' : 'My Recipe' }}</span>
+            <span v-if="isFavorite" class="favorite-indicator">
+              <i class="fas fa-heart"></i>
+            </span>
           </div>
         </div>
       </div>
     </router-link>
-    
-    <!-- Quick action buttons for logged-in users -->
-    <div v-if="store?.username && showActions" class="recipe-actions position-absolute">
-      <button 
-        @click.prevent="toggleFavorite" 
-        class="btn btn-sm btn-light rounded-circle shadow-sm"
-        :class="{ 'text-danger': isFavorite }"
-        :title="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
-      >
-        <i class="fas fa-heart"></i>
-      </button>
-    </div>
   </div>
 </template>
 
@@ -151,95 +150,297 @@ export default {
 <style scoped>
 .recipe-card {
   position: relative;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .recipe-preview-link {
   text-decoration: none;
   color: inherit;
+  display: block;
 }
 
-.recipe-card-hover {
-  transition: all 0.3s ease;
-  border: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.modern-recipe-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  min-height: 140px;
+  max-height: 140px;
+
+  &:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+    border-color: rgba(0, 123, 255, 0.2);
+  }
 }
 
-.recipe-card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+/* Image Section */
+.recipe-image-container {
+  position: relative;
+  width: 140px;
+  min-width: 140px;
+  flex-shrink: 0;
 }
 
 .recipe-image {
   width: 100%;
-  height: 200px;
+  height: 140px;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.modern-recipe-card:hover .recipe-image {
+  transform: scale(1.05);
 }
 
 .recipe-image-placeholder {
   width: 100%;
-  height: 200px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
-}
-
-.recipe-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.recipe-badges {
-  z-index: 2;
-}
-
-.recipe-badges .badge {
-  font-size: 0.7rem;
-  text-shadow: none;
-}
-
-.recipe-meta {
-  font-size: 0.875rem;
-}
-
-.recipe-actions {
-  top: 10px;
-  left: 10px;
-  z-index: 3;
-}
-
-.recipe-actions .btn {
-  width: 36px;
-  height: 36px;
+  height: 140px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #dee2e6;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(5px);
+  color: #6c757d;
+  font-size: 2rem;
+}
+
+/* Badges */
+.recipe-badges {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 2;
+}
+
+.badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.badge-vegan {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.badge-vegetarian {
+  background: linear-gradient(135deg, #17a2b8, #20c997);
+}
+
+.badge-gluten-free {
+  background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+/* Favorite Action */
+.favorite-action {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+}
+
+.favorite-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  color: #6c757d;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    background: white;
+    transform: scale(1.1);
+    color: #dc3545;
+  }
+
+  &.active {
+    background: #dc3545;
+    color: white;
+    
+    &:hover {
+      background: #c82333;
+    }
+  }
 }
 
-.recipe-actions .btn:hover {
-  transform: scale(1.1);
-  background: white;
+/* Content Section */
+.recipe-content {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0; /* Allow text to truncate */
 }
 
+.recipe-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #2c3e50;
+  margin: 0 0 0.75rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Recipe Stats */
+.recipe-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+  
+  i {
+    color: #007bff;
+    width: 12px;
+  }
+  
+  span {
+    font-weight: 500;
+  }
+}
+
+/* Source */
 .recipe-source {
-  border-top: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #6c757d;
   padding-top: 0.5rem;
+  border-top: 1px solid #e9ecef;
+  
+  i {
+    margin-right: 0.25rem;
+    color: #007bff;
+  }
+  
+  span {
+    font-weight: 500;
+  }
 }
 
-@media (max-width: 576px) {
+.favorite-indicator {
+  color: #dc3545;
+  font-size: 0.8rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modern-recipe-card {
+    min-height: 120px;
+    max-height: 120px;
+  }
+  
+  .recipe-image-container {
+    width: 120px;
+    min-width: 120px;
+  }
+  
   .recipe-image,
   .recipe-image-placeholder {
-    height: 180px;
+    height: 120px;
+  }
+  
+  .recipe-content {
+    padding: 0.75rem;
   }
   
   .recipe-title {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
   }
+  
+  .recipe-stats {
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stat-item {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .modern-recipe-card {
+    min-height: 100px;
+    max-height: 100px;
+  }
+  
+  .recipe-image-container {
+    width: 100px;
+    min-width: 100px;
+  }
+  
+  .recipe-image,
+  .recipe-image-placeholder {
+    height: 100px;
+  }
+  
+  .recipe-content {
+    padding: 0.5rem;
+  }
+  
+  .recipe-title {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+  
+  .recipe-stats {
+    gap: 0.5rem;
+  }
+  
+  .favorite-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+  
+  .badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.6rem;
+  }
+}
+
+/* Animation for better UX */
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.favorite-btn.active {
+  animation: heartBeat 0.3s ease;
 }
 </style>
