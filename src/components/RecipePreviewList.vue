@@ -4,8 +4,8 @@
       {{ title }}:
       <slot></slot>
     </h3>
-    <div class="row">
-      <div class="col" v-for="r in recipes" :key="r.id">
+    <div class="recipes-vertical">
+      <div class="recipe-item" v-for="r in recipes" :key="r.id">
         <RecipePreview 
           class="recipePreview" 
           :recipe="r" 
@@ -46,5 +46,32 @@ export default {
 <style lang="scss" scoped>
 .container {
   min-height: 400px;
+}
+
+.recipes-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recipe-item {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.recipePreview {
+  width: 100%;
+  display: block;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .recipes-vertical {
+    gap: 0.75rem;
+  }
+  
+  .recipe-item {
+    margin-bottom: 0.25rem;
+  }
 }
 </style>
