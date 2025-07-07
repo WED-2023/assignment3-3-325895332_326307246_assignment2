@@ -62,7 +62,8 @@
       </div>
     </nav>
     <main class="container-fluid py-4">
-      <router-view />
+      <CreateRecipeModal v-if="showCreateRecipeModal" :forceFamilyRecipe="forceFamilyRecipe" @close="closeCreateRecipeModal" />
+      <router-view :openCreateRecipeModal="openCreateRecipeModal" />
     </main>
     <footer class="bg-dark text-light py-4 mt-5">
       <div class="container text-center">
@@ -73,15 +74,19 @@
 </template>
 
 <script>
-import { getCurrentInstance } from 'vue';
+import { getCurrentInstance, ref } from 'vue';
+import CreateRecipeModal from '@/components/CreateRecipeModal.vue';
 
 export default {
   name: "App",
+  components: { CreateRecipeModal },
   setup() {
     const internalInstance = getCurrentInstance();
     const store = internalInstance.appContext.config.globalProperties.store;
     const toast = internalInstance.appContext.config.globalProperties.toast;
     const router = internalInstance.appContext.config.globalProperties.$router;
+    const showCreateRecipeModal = ref(false);
+    const forceFamilyRecipe = ref(false);
 
     const logout = async () => {
       await store.logout();
@@ -89,7 +94,16 @@ export default {
       router.push("/").catch(() => {});
     };
 
-    return { store, logout };
+    // Open modal, optionally as family recipe
+    const openCreateRecipeModal = (asFamily = false) => {
+      forceFamilyRecipe.value = asFamily;
+      showCreateRecipeModal.value = true;
+    };
+    const closeCreateRecipeModal = () => {
+      showCreateRecipeModal.value = false;
+      forceFamilyRecipe.value = false;
+    };
+    return { store, logout, showCreateRecipeModal, openCreateRecipeModal, closeCreateRecipeModal, forceFamilyRecipe };
   }
 }
 </script>

@@ -2,9 +2,9 @@
   <div class="container">
     <h1 class="title">My Recipes</h1>
     <div class="mb-3">
-      <router-link :to="{ name: 'createRecipe' }" class="btn btn-primary">
+      <button class="btn btn-primary" @click="openCreateRecipeModal()">
         Create New Recipe
-      </router-link>
+      </button>
     </div>
     <RecipePreviewList title="My Recipes" :recipes="myRecipes" />
   </div>
@@ -20,6 +20,12 @@ export default {
   components: {
     RecipePreviewList,
   },
+  props: {
+    openCreateRecipeModal: {
+      type: Function,
+      required: false
+    }
+  },
   data() {
     return {
       myRecipes: []
@@ -30,7 +36,6 @@ export default {
       this.$router.push('/login');
       return;
     }
-    
     try {
       const response = await axios.get(`${store.server_domain}/users/myRecipes`);
       this.myRecipes = response.data.map(r => ({

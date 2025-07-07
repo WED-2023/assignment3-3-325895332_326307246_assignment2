@@ -63,7 +63,9 @@
               </button>
               
               <div class="text-center">
-                <a href="#" class="forgot-password">Forgot password?</a>
+                <router-link :to="{ name: 'register' }" class="register-link">
+                  <i class="fas fa-user-plus me-1"></i>Create an Account
+                </router-link>
               </div>
             </form>
           </div>
