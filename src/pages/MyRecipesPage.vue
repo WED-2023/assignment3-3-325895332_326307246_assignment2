@@ -1,9 +1,9 @@
 <template>
   <div class="container">
     <h1 class="title">My Recipes</h1>
-    <div class="mb-3">
+    <div class="d-flex justify-content-end align-items-center mb-4">
       <button class="btn btn-primary" @click="openCreateRecipeModal()">
-        Create New Recipe
+        <i class="fas fa-plus me-2"></i>Create New Recipe
       </button>
     </div>
     <RecipePreviewList title="My Recipes" :recipes="myRecipes" />

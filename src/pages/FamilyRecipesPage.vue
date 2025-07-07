@@ -4,7 +4,7 @@
       <h1 class="page-title">
         <i class="fas fa-home text-warning me-2"></i>Family Recipes
       </h1>
-      <button class="btn btn-success" @click="openCreateRecipeModal()">
+      <button class="btn btn-primary" @click="openCreateRecipeModal(true)">
         <i class="fas fa-plus me-2"></i>Add Family Recipe
       </button>
     </div>
@@ -19,7 +19,7 @@
       <i class="fas fa-home display-1 text-muted mb-3"></i>
       <h3>No family recipes yet</h3>
       <p class="text-muted">Share your family's traditional recipes and preserve your culinary heritage!</p>
-      <button class="btn btn-success" @click="openCreateRecipeModal()">
+      <button class="btn btn-primary" @click="openCreateRecipeModal(true)">
         <i class="fas fa-plus me-2"></i>Add Your First Family Recipe
       </button>
     </div>
