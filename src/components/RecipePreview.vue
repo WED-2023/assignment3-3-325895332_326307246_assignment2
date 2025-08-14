@@ -27,6 +27,7 @@
             </span>
             <span v-if="recipe.glutenFree" class="badge badge-gluten-free">
               <i class="fas fa-wheat"></i>
+              <span class="badge-text">GF</span>
             </span>
           </div>
 
@@ -219,9 +220,9 @@ export default {
 }
 
 .badge {
-  width: 24px;
+  min-width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,6 +230,13 @@ export default {
   color: white;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  gap: 2px;
+  padding: 0 4px;
+}
+
+.badge-text {
+  font-size: 0.6rem;
+  font-weight: 700;
 }
 
 .badge-vegan {
@@ -428,9 +436,15 @@ export default {
   }
   
   .badge {
-    width: 20px;
+    min-width: 20px;
     height: 20px;
     font-size: 0.6rem;
+    gap: 1px;
+    padding: 0 3px;
+  }
+  
+  .badge-text {
+    font-size: 0.5rem;
   }
 }
 
