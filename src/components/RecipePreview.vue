@@ -29,6 +29,9 @@
               <i class="fas fa-wheat"></i>
               <span class="badge-text">GF</span>
             </span>
+            <span v-if="recipe.isWatched" class="badge badge-watched">
+                <i class="fas fa-eye"></i>
+            </span>
           </div>
 
           <!-- Favorite Action -->
@@ -249,6 +252,10 @@ export default {
 
 .badge-gluten-free {
   background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.badge-watched {
+  background: linear-gradient(135deg, #6c757d, #495057);
 }
 
 /* Favorite Action */
