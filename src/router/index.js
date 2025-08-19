@@ -28,6 +28,12 @@ const routes = [
     component: () => import("../pages/RecipeViewPage.vue"),
   },
   {
+    path: "/recipe/:recipeId/cooking-mode",
+    name: "cookingMode",
+    component: () => import("../pages/CookingModePage.vue"),
+    meta: { requiresAuth: true }
+  },
+  {
     path: "/favorites",
     name: "favorites",
     component: () => import("../pages/FavoritesPage.vue"),

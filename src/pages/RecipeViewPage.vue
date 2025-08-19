@@ -35,6 +35,12 @@
                 <i class="fas fa-heart me-1"></i>
                 {{ recipe.isFavorite ? 'Remove from Favorites' : 'Add to Favorites' }}
               </button>
+              <button @click="startCookingMode" class="btn btn-success me-2">
+                <i class="fas fa-play me-1"></i>Start Cooking Mode
+              </button>
+              <button @click="addToMealPlan" class="btn btn-primary">
+                <i class="fas fa-calendar-plus me-1"></i>Add to Meal Plan
+              </button>
             </div>
           </div>
         </div>
@@ -80,13 +86,14 @@
 
 <script>
 import { ref, onMounted, getCurrentInstance } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
 export default {
   name: "RecipeViewPage",
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const internalInstance = getCurrentInstance();
     const store = internalInstance.appContext.config.globalProperties.store;
     
@@ -130,13 +137,59 @@ export default {
       }
     };
     
+    const startCookingMode = () => {
+      if (!store.username) {
+        window.toast("Info", "Please login to use cooking mode", "info");
+        return;
+      }
+      
+      const { recipeId } = route.params;
+      const source = route.query.source || 'spoon';
+      
+      router.push({
+        name: 'cookingMode',
+        params: { recipeId },
+        query: { source }
+      });
+    };
+    
+    const addToMealPlan = async () => {
+      if (!store.username) {
+        window.toast("Info", "Please login to add to meal plan", "info");
+        return;
+      }
+      
+      // Simple implementation - could be enhanced with a modal for date/meal selection
+      const today = new Date().toISOString().split('T')[0];
+      const mealType = 'dinner'; // Default to dinner, could be made configurable
+      
+      try {
+        const { recipeId } = route.params;
+        const source = route.query.source || 'spoon';
+        
+        await axios.post(`${store.server_domain}/recipes/${recipeId}/meal-plan`, {
+          date: today,
+          mealType: mealType,
+          servings: recipe.value.servings || 1,
+          source: source
+        });
+        
+        window.toast("Success", `Added ${recipe.value.title} to your meal plan for today's ${mealType}!`, "success");
+      } catch (error) {
+        console.error('Failed to add to meal plan:', error);
+        window.toast("Error", "Failed to add to meal plan", "danger");
+      }
+    };
+    
     onMounted(fetchRecipe);
     
     return {
       recipe,
       loading,
       store,
-      toggleFavorite
+      toggleFavorite,
+      startCookingMode,
+      addToMealPlan
     };
   }
 };
