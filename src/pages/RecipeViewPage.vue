@@ -28,6 +28,29 @@
               <span v-if="recipe.glutenFree" class="badge bg-warning">
                 <i class="fas fa-wheat me-1"></i>Gluten Free
               </span>
+              <span v-if="recipe.isFamilyRecipe" class="badge bg-warning text-dark">
+                <i class="fas fa-home me-1"></i>Family Recipe
+              </span>
+            </div>
+            
+            <!-- Family Recipe - Who Made This -->
+            <div v-if="recipe.isFamilyRecipe && recipe.familyWho" class="alert alert-info mb-3">
+              <h6 class="alert-heading">
+                <i class="fas fa-user-friends me-2"></i>Recipe Creator
+              </h6>
+              <p class="mb-0">
+                <strong>Who made this recipe:</strong> {{ recipe.familyWho }}
+              </p>
+            </div>
+            
+            <!-- Family Recipe - When It's Made -->
+            <div v-if="recipe.isFamilyRecipe && recipe.familyWhen" class="alert alert-success mb-4">
+              <h6 class="alert-heading">
+                <i class="fas fa-calendar-alt me-2"></i>Special Occasions
+              </h6>
+              <p class="mb-0">
+                <strong>When is it made:</strong> {{ recipe.familyWhen }}
+              </p>
             </div>
             
             <div class="recipe-actions mb-4" v-if="store.username">
@@ -159,22 +182,29 @@ export default {
         return;
       }
       
-      // Simple implementation - could be enhanced with a modal for date/meal selection
-      const today = new Date().toISOString().split('T')[0];
-      const mealType = 'dinner'; // Default to dinner, could be made configurable
-      
       try {
-        const { recipeId } = route.params;
-        const source = route.query.source || 'spoon';
+        const recipeData = {
+          id: recipe.value.id,
+          title: recipe.value.title,
+          image: recipe.value.image,
+          readyInMinutes: recipe.value.readyInMinutes,
+          servings: recipe.value.servings,
+          isSpoonacular: route.query.source === 'spoon' || !route.query.source,
+          analyzedInstructions: recipe.value.analyzedInstructions,
+          instructions: recipe.value.instructions,
+          ingredients: recipe.value.ingredients,
+          vegan: recipe.value.vegan,
+          vegetarian: recipe.value.vegetarian,
+          glutenFree: recipe.value.glutenFree || recipe.value.gluten_free || recipe.value['gluten-free']
+        };
         
-        await axios.post(`${store.server_domain}/recipes/${recipeId}/meal-plan`, {
-          date: today,
-          mealType: mealType,
-          servings: recipe.value.servings || 1,
-          source: source
-        });
+        const added = store.addToMealPlan(recipeData);
         
-        window.toast("Success", `Added ${recipe.value.title} to your meal plan for today's ${mealType}!`, "success");
+        if (added) {
+          window.toast("Success", `Added "${recipe.value.title}" to your meal plan!`, "success");
+        } else {
+          window.toast("Info", "Recipe is already in your meal plan", "info");
+        }
       } catch (error) {
         console.error('Failed to add to meal plan:', error);
         window.toast("Error", "Failed to add to meal plan", "danger");

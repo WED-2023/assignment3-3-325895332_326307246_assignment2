@@ -64,10 +64,6 @@
           Passwords must match.
         </div>
       </div>
-      <div class="form-group">
-        <label>Profile Picture URL:</label>
-        <input v-model="state.profilePic" type="text" class="form-control" />
-      </div>
       <button type="submit" class="btn btn-success mt-3">Register</button>
     </form>
   </div>
@@ -99,8 +95,7 @@ export default {
       country: '',
       email: '',
       password: '',
-      confirmPassword: '',
-      profilePic: ''
+      confirmPassword: ''
     });
 
     // Create a reactive ref for state.password
@@ -148,8 +143,7 @@ export default {
             lastname: state.lastname,
             country: state.country,
             password: state.password,
-            email: state.email,
-            profilePic: state.profilePic
+            email: state.email
           });
           window.toast("Registration Successful", "You can now login", "success");
           router.push('/login');

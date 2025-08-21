@@ -104,6 +104,20 @@
                 </select>
               </div>
             </div>
+
+            <!-- Sorting Options -->
+            <div class="row mb-3" v-if="hasSearched && recipes.length > 0">
+              <div class="col-md-6">
+                <label for="sortBy" class="form-label">Sort by:</label>
+                <select id="sortBy" class="form-select" v-model="sortBy" @change="applySorting">
+                  <option value="">Default (Relevance)</option>
+                  <option value="readyInMinutes-asc">Preparation Time (Shortest First)</option>
+                  <option value="readyInMinutes-desc">Preparation Time (Longest First)</option>
+                  <option value="title-asc">Title (A-Z)</option>
+                  <option value="title-desc">Title (Z-A)</option>
+                </select>
+              </div>
+            </div>
   
             <!-- Search Button -->
             <div class="d-flex justify-content-between align-items-center">
@@ -134,12 +148,28 @@
           <p class="text-muted">Try adjusting your search criteria or filters.</p>
         </div>
         
-        <RecipePreviewList 
-          v-else 
-          :title="`Search Results (${recipes.length} found)`" 
-          :recipes="recipes" 
-          @favorite-changed="handleFavoriteChanged"
-        />
+        <div v-else>
+          <!-- Sorting indicator -->
+          <div v-if="sortBy" class="alert alert-info d-flex align-items-center mb-3">
+            <i class="fas fa-sort me-2"></i>
+            <span>Results sorted by: 
+              <strong>
+                {{
+                  sortBy === 'readyInMinutes-asc' ? 'Preparation Time (Shortest First)' :
+                  sortBy === 'readyInMinutes-desc' ? 'Preparation Time (Longest First)' :
+                  sortBy === 'title-asc' ? 'Title (A-Z)' :
+                  sortBy === 'title-desc' ? 'Title (Z-A)' : 'Default'
+                }}
+              </strong>
+            </span>
+          </div>
+          
+          <RecipePreviewList 
+            :title="`Search Results (${recipes.length} found)`" 
+            :recipes="recipes" 
+            @favorite-changed="handleFavoriteChanged"
+          />
+        </div>
       </div>
       
       <!-- Welcome message for first visit -->
@@ -168,10 +198,15 @@
         selectedCuisine: '',
         selectedDiet: '',
         selectedIntolerances: '',
+        sortBy: '',
         recipes: [],
+        originalRecipes: [], // Keep original order for default sorting
         loading: false,
         hasSearched: false
       };
+    },
+    mounted() {
+      this.loadLastSearch();
     },
     methods: {
       async search() {
@@ -210,9 +245,20 @@
             isFavorite: false // Will be updated by favorites check if user is logged in
           }));
           
+          // Store original order
+          this.originalRecipes = [...this.recipes];
+          
           // If user is logged in, check which recipes are favorites
           if (store.username) {
             await this.checkFavorites();
+          }
+          
+          // Save search parameters to sessionStorage
+          this.saveLastSearch();
+          
+          // Apply current sorting if any
+          if (this.sortBy) {
+            this.applySorting();
           }
           
           window.toast("Success", `Found ${this.recipes.length} recipes!`, "success");
@@ -220,6 +266,7 @@
           console.error(error);
           window.toast("Error", "Search failed. Please try again.", "danger");
           this.recipes = [];
+          this.originalRecipes = [];
         } finally {
           this.loading = false;
         }
@@ -234,6 +281,12 @@
             ...recipe,
             isFavorite: favorites.some(fav => fav.id == recipe.id && fav.isSpoonacular)
           }));
+          
+          // Update original recipes as well
+          this.originalRecipes = this.originalRecipes.map(recipe => ({
+            ...recipe,
+            isFavorite: favorites.some(fav => fav.id == recipe.id && fav.isSpoonacular)
+          }));
         } catch (error) {
           console.error('Failed to check favorites:', error);
         }
@@ -245,6 +298,94 @@
         if (recipe) {
           recipe.isFavorite = isFavorite;
         }
+        // Also update in original recipes
+        const originalRecipe = this.originalRecipes.find(r => r.id === recipeId);
+        if (originalRecipe) {
+          originalRecipe.isFavorite = isFavorite;
+        }
+      },
+      
+      applySorting() {
+        if (!this.sortBy) {
+          // Reset to original order
+          this.recipes = [...this.originalRecipes];
+          return;
+        }
+        
+        const [field, order] = this.sortBy.split('-');
+        
+        this.recipes.sort((a, b) => {
+          let aValue, bValue;
+          
+          if (field === 'readyInMinutes') {
+            aValue = a.readyInMinutes || 0;
+            bValue = b.readyInMinutes || 0;
+          } else if (field === 'title') {
+            aValue = (a.title || '').toLowerCase();
+            bValue = (b.title || '').toLowerCase();
+          }
+          
+          if (order === 'asc') {
+            return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+          } else {
+            return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+          }
+        });
+      },
+      
+      saveLastSearch() {
+        const searchData = {
+          searchQuery: this.searchQuery,
+          number: this.number,
+          selectedCuisine: this.selectedCuisine,
+          selectedDiet: this.selectedDiet,
+          selectedIntolerances: this.selectedIntolerances,
+          sortBy: this.sortBy,
+          recipes: this.recipes,
+          originalRecipes: this.originalRecipes,
+          hasSearched: this.hasSearched,
+          timestamp: Date.now()
+        };
+        
+        try {
+          sessionStorage.setItem('lastSearch', JSON.stringify(searchData));
+        } catch (error) {
+          console.error('Failed to save search to sessionStorage:', error);
+        }
+      },
+      
+      loadLastSearch() {
+        try {
+          const savedSearch = sessionStorage.getItem('lastSearch');
+          if (savedSearch) {
+            const searchData = JSON.parse(savedSearch);
+            
+            // Check if the saved search is from the same session (within reasonable time)
+            const hoursSinceSearch = (Date.now() - searchData.timestamp) / (1000 * 60 * 60);
+            if (hoursSinceSearch < 24) { // Keep search for up to 24 hours
+              this.searchQuery = searchData.searchQuery || '';
+              this.number = searchData.number || 5;
+              this.selectedCuisine = searchData.selectedCuisine || '';
+              this.selectedDiet = searchData.selectedDiet || '';
+              this.selectedIntolerances = searchData.selectedIntolerances || '';
+              this.sortBy = searchData.sortBy || '';
+              this.recipes = searchData.recipes || [];
+              this.originalRecipes = searchData.originalRecipes || [];
+              this.hasSearched = searchData.hasSearched || false;
+              
+              if (this.hasSearched && this.recipes.length > 0) {
+                window.toast("Info", "Restored your last search results.", "info");
+              }
+            } else {
+              // Clear old search data
+              sessionStorage.removeItem('lastSearch');
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load search from sessionStorage:', error);
+          // Clear corrupted data
+          sessionStorage.removeItem('lastSearch');
+        }
       },
       
       clearFilters() {
@@ -252,9 +393,18 @@
         this.selectedCuisine = '';
         this.selectedDiet = '';
         this.selectedIntolerances = '';
+        this.sortBy = '';
         this.number = 5;
         this.recipes = [];
+        this.originalRecipes = [];
         this.hasSearched = false;
+        
+        // Clear saved search
+        try {
+          sessionStorage.removeItem('lastSearch');
+        } catch (error) {
+          console.error('Failed to clear search from sessionStorage:', error);
+        }
       }
     },
   };

@@ -15,21 +15,6 @@
                 <i class="fas fa-search me-1"></i>Search
               </router-link>
             </li>
-            <li class="nav-item" v-if="store.username">
-              <router-link :to="{ name: 'favorites' }" class="nav-link">
-                <i class="fas fa-heart me-1"></i>My Favorites
-              </router-link>
-            </li>
-            <li class="nav-item" v-if="store.username">
-              <router-link :to="{ name: 'myRecipes' }" class="nav-link">
-                <i class="fas fa-book me-1"></i>My Recipes
-              </router-link>
-            </li>
-            <li class="nav-item" v-if="store.username">
-              <router-link :to="{ name: 'familyRecipes' }" class="nav-link">
-                <i class="fas fa-home me-1"></i>Family Recipes
-              </router-link>
-            </li>
             <li class="nav-item">
               <router-link :to="{ name: 'about' }" class="nav-link">
                 <i class="fas fa-info-circle me-1"></i>About
@@ -37,6 +22,20 @@
             </li>
           </ul>
           <ul class="navbar-nav">
+            <!-- Meal Plan Badge -->
+            <li class="nav-item me-3" v-if="store.username">
+              <router-link :to="{ name: 'mealPlan' }" class="nav-link meal-plan-badge">
+                <i class="fas fa-clipboard-list me-1"></i>
+                <span class="badge bg-warning text-dark ms-1">{{ store.getMealPlanCount() }}</span>
+                <span class="d-none d-md-inline ms-1">Meal Plan</span>
+              </router-link>
+            </li>
+            <!-- Guest Greeting -->
+            <li class="nav-item me-3" v-if="!store.username">
+              <span class="navbar-text guest-greeting">
+                <i class="fas fa-user-circle me-1"></i>Hello Guest
+              </span>
+            </li>
             <li class="nav-item" v-if="!store.username">
               <router-link :to="{ name: 'register' }" class="nav-link">
                 <i class="fas fa-user-plus me-1"></i>Register
@@ -52,8 +51,18 @@
                 <i class="fas fa-user me-1"></i>{{ store.username }}
               </a>
               <ul class="dropdown-menu">
+                <li><router-link :to="{ name: 'favorites' }" class="dropdown-item">
+                  <i class="fas fa-heart me-2"></i>My Favorites
+                </router-link></li>
+                <li><router-link :to="{ name: 'myRecipes' }" class="dropdown-item">
+                  <i class="fas fa-book me-2"></i>My Recipes
+                </router-link></li>
+                <li><router-link :to="{ name: 'familyRecipes' }" class="dropdown-item">
+                  <i class="fas fa-home me-2"></i>Family Recipes
+                </router-link></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><button @click="logout" class="dropdown-item">
-                  <i class="fas fa-sign-out-alt me-1"></i>Logout
+                  <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </button></li>
               </ul>
             </li>
@@ -131,6 +140,29 @@ main {
   font-size: 1.5rem;
 }
 
+.meal-plan-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.meal-plan-badge .badge {
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 .card {
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   border: none;
@@ -162,5 +194,56 @@ main {
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
+}
+
+// Custom dropdown styling
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 0.5rem 0;
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  color: #374151;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  
+  &:hover, &:focus {
+    background-color: #f3f4f6;
+    color: #1f2937;
+    transform: translateX(2px);
+  }
+  
+  &:active {
+    background-color: #e5e7eb;
+  }
+  
+  i {
+    width: 20px;
+    text-align: center;
+  }
+}
+
+.dropdown-divider {
+  margin: 0.5rem 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+// Guest greeting styling
+.guest-greeting {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  
+  i {
+    opacity: 0.8;
+  }
 }
 </style>

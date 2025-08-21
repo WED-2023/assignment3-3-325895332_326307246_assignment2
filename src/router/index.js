@@ -58,6 +58,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: "/meal-plan",
+    name: "mealPlan",
+    component: () => import("../pages/MealPlanPage.vue"),
+    meta: { requiresAuth: true }
+  },
+  {
     path: "/about",
     name: "about",
     component: () => import("../pages/AboutPage.vue"),

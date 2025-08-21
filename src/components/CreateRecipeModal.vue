@@ -61,7 +61,7 @@
                       <input v-model="recipe.familyStory.who" type="text" class="form-control" placeholder="e.g., Grandma Sarah">
                     </div>
                     <div class="col-md-6 mb-2">
-                      <label class="form-label">When was it made?</label>
+                      <label class="form-label">When is it made?</label>
                       <input v-model="recipe.familyStory.when" type="text" class="form-control" placeholder="e.g., Every Sunday dinner">
                     </div>
                   </div>

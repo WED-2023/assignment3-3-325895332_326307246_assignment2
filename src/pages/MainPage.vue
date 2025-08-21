@@ -3,10 +3,10 @@
     <h1 class="title">Main Page</h1>
 
     <div class="row">
-      <!-- Left Column - Random Recipes -->
+      <!-- Left Column - Explore Recipes -->
       <div class="col-lg-6 col-md-12 mb-4">
         <RecipePreviewList 
-          title="Random Recipes" 
+          title="Explore this recipes" 
           :recipes="randomRecipes" 
           class="RandomRecipes" 
           @favorite-changed="handleFavoriteChanged"

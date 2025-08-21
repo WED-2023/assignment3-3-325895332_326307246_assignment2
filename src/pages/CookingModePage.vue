@@ -287,6 +287,48 @@ export default {
         const response = await axios.get(`${store.server_domain}/recipes/${recipeId}/cooking-mode?source=${source}&servings=${servingMultiplier.value}`);
         recipe.value = response.data;
         
+        // Auto-add recipe to meal plan if user is logged in and recipe is not already there
+        if (store.username && recipe.value) {
+          const recipeData = {
+            id: recipe.value.id,
+            title: recipe.value.title,
+            image: recipe.value.image,
+            readyInMinutes: recipe.value.readyInMinutes,
+            servings: recipe.value.servings,
+            isSpoonacular: source === 'spoon',
+            analyzedInstructions: recipe.value.analyzedInstructions,
+            instructions: recipe.value.instructions,
+            ingredients: recipe.value.ingredients,
+            vegan: recipe.value.vegan,
+            vegetarian: recipe.value.vegetarian,
+            glutenFree: recipe.value.glutenFree || recipe.value.gluten_free || recipe.value['gluten-free']
+          };
+          
+          const added = store.addToMealPlan(recipeData);
+          if (added) {
+            // Update meal plan progress to show cooking started
+            const mealPlanItem = store.mealPlan.find(item => 
+              item.recipe.id == recipeId && item.recipe.isSpoonacular === (source === 'spoon')
+            );
+            if (mealPlanItem) {
+              // The recipe.value.servings already contains the adjusted servings from the API
+              store.updateServingSize(mealPlanItem.id, recipe.value.servings);
+              store.updateCookingProgress(mealPlanItem.id, currentStep.value, true);
+            }
+            window.toast("Success", "Recipe added to your meal plan!", "success");
+          } else {
+            // Recipe already in meal plan, just update progress and serving size
+            const mealPlanItem = store.mealPlan.find(item => 
+              item.recipe.id == recipeId && item.recipe.isSpoonacular === (source === 'spoon')
+            );
+            if (mealPlanItem) {
+              // The recipe.value.servings already contains the adjusted servings from the API
+              store.updateServingSize(mealPlanItem.id, recipe.value.servings);
+            }
+            updateMealPlanProgress();
+          }
+        }
+        
         // Start auto-save
         startAutoSave();
       } catch (error) {
@@ -318,6 +360,7 @@ export default {
       if (currentStep.value < recipe.value.totalSteps - 1) {
         currentStep.value++;
         saveProgress(); // Save immediately on step change
+        updateMealPlanProgress(); // Update meal plan progress
       }
     };
     
@@ -325,12 +368,35 @@ export default {
       if (currentStep.value > 0) {
         currentStep.value--;
         saveProgress(); // Save immediately on step change
+        updateMealPlanProgress(); // Update meal plan progress
       }
     };
     
     const goToStep = (stepIndex) => {
       currentStep.value = stepIndex;
       saveProgress(); // Save immediately on step change
+      updateMealPlanProgress(); // Update meal plan progress
+    };
+    
+    // Update meal plan progress
+    const updateMealPlanProgress = () => {
+      if (store.username && recipe.value) {
+        const recipeId = route.params.recipeId;
+        const isSpoonacular = (route.query.source || 'spoon') === 'spoon';
+        
+        // Find the meal plan item for this recipe
+        const mealPlanItem = store.mealPlan.find(item => 
+          item.recipe.id == recipeId && item.recipe.isSpoonacular === isSpoonacular
+        );
+        
+        if (mealPlanItem) {
+          store.updateCookingProgress(
+            mealPlanItem.id, 
+            currentStep.value, 
+            true // Started cooking
+          );
+        }
+      }
     };
     
     const adjustServings = async (change) => {
@@ -345,6 +411,19 @@ export default {
           
           const response = await axios.get(`${store.server_domain}/recipes/${recipeId}/cooking-mode?source=${source}&servings=${newMultiplier}`);
           recipe.value = response.data;
+          
+          // Update meal plan with new serving size
+          if (store.username && recipe.value) {
+            const isSpoonacular = source === 'spoon';
+            const mealPlanItem = store.mealPlan.find(item => 
+              item.recipe.id == recipeId && item.recipe.isSpoonacular === isSpoonacular
+            );
+            
+            if (mealPlanItem) {
+              // The recipe.value.servings already contains the adjusted servings from the API
+              store.updateServingSize(mealPlanItem.id, recipe.value.servings);
+            }
+          }
           
           // Save the new serving multiplier
           saveProgress();
@@ -366,6 +445,25 @@ export default {
     };
     
     const finishCooking = async () => {
+      // Update meal plan progress to completed before clearing
+      if (store.username && recipe.value) {
+        const recipeId = route.params.recipeId;
+        const isSpoonacular = (route.query.source || 'spoon') === 'spoon';
+        
+        // Find the meal plan item for this recipe
+        const mealPlanItem = store.mealPlan.find(item => 
+          item.recipe.id == recipeId && item.recipe.isSpoonacular === isSpoonacular
+        );
+        
+        if (mealPlanItem) {
+          store.updateCookingProgress(
+            mealPlanItem.id, 
+            recipe.value.totalSteps, // Mark as completed
+            true // Started cooking
+          );
+        }
+      }
+      
       // Clear progress when cooking is finished
       await clearProgress();
       stopAutoSave();

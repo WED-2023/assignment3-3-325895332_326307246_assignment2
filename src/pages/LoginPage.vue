@@ -18,6 +18,12 @@
       </div>
       <button type="submit" class="btn btn-primary mt-3">Login</button>
     </form>
+    <div class="text-center mt-4">
+      <p class="mb-2">Don't have an account?</p>
+      <router-link :to="{ name: 'register' }" class="btn btn-outline-success">
+        <i class="fas fa-user-plus me-2"></i>Register Now
+      </router-link>
+    </div>
   </div>
 </template>
 
