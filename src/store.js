@@ -3,7 +3,8 @@ import axios from 'axios';
 
 const store = reactive({
   username: localStorage.getItem('username'),
-  server_domain: "http://localhost:3000",
+  server_domain: "https://shahafr.cs.bgu.ac.il",
+  //server_domain: "http://localhost:3000",
   mealPlan: (() => {
     const savedMealPlan = JSON.parse(sessionStorage.getItem('mealPlan') || '[]');
     // Migrate existing data to ensure currentServings field exists
@@ -16,14 +17,16 @@ const store = reactive({
   login(username) {
     localStorage.setItem('username', username);
     this.username = username;
+    console.log("login", this.username);
   },
 
   async logout() {
     try {
-      await axios.post(`${this.server_domain}/logout`);
+      await axios.post(`${this.server_domain}/Logout`);
     } catch (error) {
       console.error("Logout failed on server:", error);
     }
+    console.log("logout");
     localStorage.removeItem('username');
     this.username = undefined;
     // Clear meal plan on logout

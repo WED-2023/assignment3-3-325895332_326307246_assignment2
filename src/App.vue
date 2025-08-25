@@ -26,7 +26,7 @@
             <li class="nav-item me-3" v-if="store.username">
               <router-link :to="{ name: 'mealPlan' }" class="nav-link meal-plan-badge">
                 <i class="fas fa-clipboard-list me-1"></i>
-                <span class="badge bg-warning text-dark ms-1">{{ store.getMealPlanCount() }}</span>
+                <span class="badge bg-warning text-dark ms-1">{{ mealPlanCount }}</span>
                 <span class="d-none d-md-inline ms-1">Meal Plan</span>
               </router-link>
             </li>
@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { getCurrentInstance, ref } from 'vue';
+import { getCurrentInstance, ref, computed } from 'vue';
 import CreateRecipeModal from '@/components/CreateRecipeModal.vue';
 
 export default {
@@ -96,6 +96,11 @@ export default {
     const router = internalInstance.appContext.config.globalProperties.$router;
     const showCreateRecipeModal = ref(false);
     const forceFamilyRecipe = ref(false);
+
+    // Reactive meal plan count
+    const mealPlanCount = computed(() => {
+      return store.getMealPlanCount();
+    });
 
     const logout = async () => {
       await store.logout();
@@ -112,7 +117,15 @@ export default {
       showCreateRecipeModal.value = false;
       forceFamilyRecipe.value = false;
     };
-    return { store, logout, showCreateRecipeModal, openCreateRecipeModal, closeCreateRecipeModal, forceFamilyRecipe };
+    return { 
+      store, 
+      logout, 
+      showCreateRecipeModal, 
+      openCreateRecipeModal, 
+      closeCreateRecipeModal, 
+      forceFamilyRecipe,
+      mealPlanCount
+    };
   }
 }
 </script>

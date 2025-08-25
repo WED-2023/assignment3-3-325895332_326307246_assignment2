@@ -176,7 +176,7 @@ export default {
       });
     };
     
-    const addToMealPlan = async () => {
+    const addToMealPlan = () => {
       if (!store.username) {
         window.toast("Info", "Please login to add to meal plan", "info");
         return;
