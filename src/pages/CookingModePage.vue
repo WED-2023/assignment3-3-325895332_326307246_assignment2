@@ -101,7 +101,7 @@
                 </button>
                 
                 <button 
-                  v-if="currentStep < recipe.totalSteps - 1"
+                  v-if="!cookingCompleted"
                   @click="nextStep" 
                   class="btn btn-sm btn-primary"
                 >
@@ -109,7 +109,7 @@
                 </button>
                 
                 <button 
-                  v-else
+                  v-if="cookingCompleted"
                   @click="finishCooking" 
                   class="btn btn-sm btn-success"
                 >
@@ -144,23 +144,10 @@
                 <div class="step-instruction">
                   {{ recipe.instructions[currentStep] }}
                 </div>
-                <div class="step-actions mt-4">
-                  <div class="form-check">
-                    <input 
-                      class="form-check-input" 
-                      type="checkbox" 
-                      :id="`step-${currentStep}`"
-                      v-model="completedSteps[currentStep]"
-                    >
-                    <label :for="`step-${currentStep}`" class="form-check-label">
-                      Mark this step as completed
-                    </label>
-                  </div>
-                </div>
               </div>
 
               <!-- Completion -->
-              <div v-if="currentStep === recipe.totalSteps - 1 && completedSteps[currentStep]" class="completion-message mt-4">
+              <div v-if="cookingCompleted" class="completion-message mt-4">
                 <div class="alert alert-success text-center">
                   <i class="fas fa-check-circle me-2"></i>
                   Congratulations! You've completed cooking {{ recipe.title }}!
@@ -210,6 +197,7 @@ export default {
     const servingMultiplier = ref(1);
     const checkedIngredients = reactive({});
     const completedSteps = reactive({});
+    const cookingCompleted = ref(false);
     
     // Auto-save interval
     let autoSaveInterval = null;
@@ -361,6 +349,11 @@ export default {
         currentStep.value++;
         saveProgress(); // Save immediately on step change
         updateMealPlanProgress(); // Update meal plan progress
+      } else if (currentStep.value === recipe.value.totalSteps - 1) {
+        // User clicked Next on the final step - mark cooking as completed
+        cookingCompleted.value = true;
+        saveProgress();
+        updateMealPlanProgress();
       }
     };
     
@@ -370,12 +363,21 @@ export default {
         saveProgress(); // Save immediately on step change
         updateMealPlanProgress(); // Update meal plan progress
       }
+      // Reset cooking completed state when going back from completion
+      if (cookingCompleted.value) {
+        cookingCompleted.value = false;
+      }
     };
     
     const goToStep = (stepIndex) => {
       currentStep.value = stepIndex;
       saveProgress(); // Save immediately on step change
       updateMealPlanProgress(); // Update meal plan progress
+      
+      // Reset cooking completed state when navigating to any step
+      if (cookingCompleted.value) {
+        cookingCompleted.value = false;
+      }
     };
     
     // Update meal plan progress
@@ -506,6 +508,7 @@ export default {
       servingMultiplier,
       checkedIngredients,
       completedSteps,
+      cookingCompleted,
       store,
       nextStep,
       previousStep,
